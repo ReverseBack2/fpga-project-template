@@ -1,0 +1,15 @@
+{
+    "folders": [{"path": ".", "folder_exclude_patterns": ["build", ".fpga", ".git"]}],
+    "build_systems": [
+        {
+            "name": "FPGA local simulation",
+            "cmd": ["python3", "sim/run.py"],
+            "working_dir": "$project_path",
+            "file_regex": "^%Error[^:]*: (.+?):([0-9]+):([0-9]+): (.*)$",
+            "variants": [
+                {"name": "Simulate and view", "cmd": ["python3", "sim/run.py", "--view"]},
+                {"name": "Lint", "cmd": ["python3", "sim/run.py", "--lint"]}
+            ]
+        }
+    ]
+}

@@ -1,0 +1,11 @@
+build/
+artifacts/
+.fpga/
+*.vcd
+*.fst
+*.log
+*.jou
+.Xil/
+*.sublime-workspace
+__pycache__/
+.DS_Store

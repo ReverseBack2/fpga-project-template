@@ -1,0 +1,15 @@
+name: Verify simulation
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  simulate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install simulation tools
+        run: sudo apt-get update && sudo apt-get install -y verilator g++ make python3
+      - name: Lint and run self-checking test
+        run: make lint sim
+      - name: Confirm incremental compilation
+        run: python3 sim/run.py | tee /tmp/sim-output && grep -q 'Reusing compiled simulator' /tmp/sim-output
