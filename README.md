@@ -33,7 +33,7 @@ make clean                    # Remove build outputs
 
 `counter` checks reset, counting, overflow, and another reset. `reset` checks held reset and restarting after reset. Both testbenches stop with a nonzero status on failure and have a timeout.
 
-Each test has its own simulator, `sim.log`, and `dump.vcd` under `build/sim/TEST/`. An unchanged build reuses its simulator. Source, common header, compiler, tool-version, and compilation-argument changes invalidate the cache. Runtime arguments and memory images do not require recompilation. A simulation clears its previous waveform before compilation so a failed build cannot leave an old trace available.
+Each test has its own simulator, `sim.log`, and `dump.vcd` under `build/sim/TEST/`. An unchanged build reuses its simulator. Source and common header contents, compiler, tool-version, and compilation-argument changes invalidate the cache. Content checks catch quick edits even with Apple's bundled Make. Runtime arguments and memory images do not require recompilation. A simulation clears its previous waveform before compilation so a failed build cannot leave an old trace available.
 
 The simulation prints its log after it finishes. `simview` opens GTKWave after a successful simulation. To inspect a partial trace from a failed simulation, use `make view`.
 

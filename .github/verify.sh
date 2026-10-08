@@ -36,8 +36,11 @@ run_make sim
 test ! build/sim/counter/obj/Vtb_counter -nt "$work/compiled"
 printf '%s\n' 'PASS: both tests, independent traces, and cache reuse'
 cp -p build/sim/counter/obj/Vtb_counter "$work/compiled"
+cp -p rtl/include/nested/width.svh "$work/original-header"
 sleep 1
 printf '\n// Nested include dependency check\n' >> rtl/include/nested/width.svh
+# Prove content changes are detected even when the modification time is unchanged.
+touch -r "$work/original-header" rtl/include/nested/width.svh
 run_make sim
 test build/sim/counter/obj/Vtb_counter -nt "$work/compiled"
 run_make sim TEST=reset
@@ -86,6 +89,7 @@ printf '%s\n' 'PASS: included header changes invalidate the cache'
 # A failed compilation clears the previous waveform before invoking the compiler.
 printf '%s\n' 'this is invalid SystemVerilog' >> tb/tb_counter.sv
 if make sim > "$work/output" 2>&1; then
+    cat "$work/output"
     echo 'Expected a compilation failure.' >&2
     exit 1
 fi

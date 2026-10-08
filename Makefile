@@ -24,6 +24,7 @@ SIM_HEADERS ?= $(shell find rtl tb -type f \( -name '*.svh' -o -name '*.vh' \))
 SIM_DIR := $(CURDIR)/build/sim/$(TEST)
 SIM_BINARY := $(SIM_DIR)/obj/V$(SIM_TOP)
 SIM_CONFIG := $(SIM_DIR)/compile.config
+SIM_BUILT_CONFIG := $(SIM_DIR)/compiled.config
 WAVEFORM := $(SIM_DIR)/dump.vcd
 
 .PHONY: help list-tests check-test check-jobs build lint sim view simview test check
@@ -53,15 +54,18 @@ $(SIM_CONFIG): FORCE | check-test check-jobs
 	@mkdir -p '$(SIM_DIR)'
 	@set -e; { printf '%s\n' '$(VERILATOR)' '--binary --trace' '$(VERILATOR_FLAGS) $(SIM_FLAGS)' '$(SIM_TOP)' \
 	  '$(SIM_SOURCES)' '$(SIM_HEADERS)' '$(CXX)' '$(CXXFLAGS)'; \
+	  cksum $(SIM_SOURCES) $(SIM_HEADERS); \
 	  '$(VERILATOR)' --version; $(CXX) --version; } > '$@.tmp'
 	@if cmp -s '$@.tmp' '$@'; then rm '$@.tmp'; else mv '$@.tmp' '$@'; fi
 
-$(SIM_BINARY): $(SIM_SOURCES) $(SIM_HEADERS) $(SIM_CONFIG)
+$(SIM_BINARY): $(SIM_SOURCES) $(SIM_HEADERS) $(SIM_CONFIG) FORCE
 	@mkdir -p '$(SIM_DIR)/obj'
-	'$(VERILATOR)' --binary --trace --build-jobs '$(JOBS)' \
+	@set -e; if test -f '$@' && cmp -s '$(SIM_CONFIG)' '$(SIM_BUILT_CONFIG)'; then \
+	  :; else \
+	  '$(VERILATOR)' --binary --trace --build-jobs '$(JOBS)' \
 	  --Mdir '$(SIM_DIR)/obj' --top-module '$(SIM_TOP)' \
-	  $(VERILATOR_FLAGS) $(SIM_FLAGS) $(SIM_SOURCES)
-	@touch '$@'
+	  $(VERILATOR_FLAGS) $(SIM_FLAGS) $(SIM_SOURCES); \
+	  touch '$@'; cp '$(SIM_CONFIG)' '$(SIM_BUILT_CONFIG)'; fi
 
 build: check-test check-jobs $(SIM_BINARY)
 	@printf '%s\n' 'Simulator: $(SIM_BINARY)'
