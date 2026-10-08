@@ -1,3 +1,3 @@
 # Waveform layouts
 
-After selecting signals in GTKWave, save the layout as `sim/waves/counter.gtkw`. The workbench client uses it when you run `fpga sim --view` or `fpga wave`. Layouts are versioned; traces are ignored.
+Save GTKWave signal selections as `sim/waves/TEST.gtkw` and set `SIM_LAYOUT` in the test definition. `make view` and `make simview` load that layout when it exists. Layouts are committed; traces remain in `build/sim/TEST` and are ignored.

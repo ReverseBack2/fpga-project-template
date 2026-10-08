@@ -7,5 +7,4 @@ artifacts/
 *.jou
 .Xil/
 *.sublime-workspace
-__pycache__/
 .DS_Store

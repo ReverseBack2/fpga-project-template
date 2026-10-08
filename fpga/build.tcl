@@ -1,4 +1,4 @@
-# vivado -mode batch -source fpga/build.tcl -tclargs synth <part> 2
+# Make passes target, part, jobs, top, and the pinned Vivado version.
 proc require_complete {run} {
     set status [get_property STATUS [get_runs $run]]
     if {[get_property PROGRESS [get_runs $run]] ne "100%" ||
@@ -8,23 +8,21 @@ proc require_complete {run} {
 }
 proc build_design {} {
     global argv
-    if {[llength $argv] != 3} { error "Expected target, FPGA part, and job count" }
-    lassign $argv target part jobs
-    if {$target ni {synth impl bitstream}} { error "Unknown target: $target" }
-    if {$part eq ""} { error "Select an exact FPGA part before synthesis" }
-    if {![string is integer -strict $jobs] || $jobs < 1 || $jobs > 6} {
-        error "Job count must be between 1 and 6"
-    }
+    if {[llength $argv] != 5} { error "Expected target, part, jobs, top, and Vivado version" }
+    lassign $argv target part jobs top expected_version
+    if {$target ni {ip synth impl bitstream}} { error "Unknown target: $target" }
     global script_root
     set root $script_root
     if {$target eq "bitstream" && ![file exists [file join $root fpga constraints pins.xdc]]} {
         error "Create fpga/constraints/pins.xdc for your board before generating a bitstream"
     }
-    if {[version -short] ne "2026.1"} { error "This project requires Vivado 2026.1" }
     set output [file join $root build vivado]
     file mkdir $output
     source [file join $root fpga create_project.tcl]
-    create_design_project $root [file join $output project] $part $jobs
+    validate_design_settings $part $jobs $top $expected_version
+    create_design_project $root [file join $output project] $part $jobs $top
+    report_ip_status -file [file join $output ip_status.rpt]
+    if {$target eq "ip"} { return }
     launch_runs synth_1 -jobs $jobs
     wait_on_run synth_1
     require_complete synth_1
